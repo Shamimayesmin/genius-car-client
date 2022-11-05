@@ -3,72 +3,71 @@ import { AuthContext } from "../../context/AuthProvider/AuthProvider";
 import OrderRow from "./OrderRow";
 
 const Orders = () => {
-	const { user ,logOut} = useContext(AuthContext);
+	const { user, logOut } = useContext(AuthContext);
 
 	const [orders, setOrders] = useState([]);
 
-	const handleDelete = id =>{
-		const procced = window.confirm('Do you want to cancel this order');
-		if(procced){
-			fetch(`http://localhost:5000/orders/${id}`, {
-				method : 'DELETE'
+	const handleDelete = (id) => {
+		const procced = window.confirm("Do you want to cancel this order");
+		if (procced) {
+			fetch(`https://genius-car-server-rust.vercel.app/orders/${id}`, {
+				method: "DELETE",
 			})
-			.then(res => res.json())
-			.then(data => {
-				console.log(data);
-				if(data.deletedCount > 0){
-					alert('deleted successfully');
-					const reamaining = orders.filter(odr =>odr._id !== id)
-					setOrders(reamaining)
-				}
-			})
+				.then((res) => res.json())
+				.then((data) => {
+					console.log(data);
+					if (data.deletedCount > 0) {
+						alert("deleted successfully");
+						const reamaining = orders.filter((odr) => odr._id !== id);
+						setOrders(reamaining);
+					}
+				});
 		}
-	}
+	};
 
-
-// upadte checkout page 
-	const handleStatusUpdate = id =>{
-		fetch(`http://localhost:5000/orders/${id}`,{
-			method : 'PATCH',
-			headers : {
-				'content-type' : 'application/json'
+	// upadte checkout page
+	const handleStatusUpdate = (id) => {
+		fetch(`https://genius-car-server-rust.vercel.app/orders/${id}`, {
+			method: "PATCH",
+			headers: {
+				"content-type": "application/json",
 			},
-			body : JSON.stringify({status : 'Approved'})
-
+			body: JSON.stringify({ status: "Approved" }),
 		})
-		.then(res =>res.json())
-		.then(data => {
-			console.log(data)
-			if(data.modifiedCount > 0){
-				const reamaining = orders.filter(odr =>odr._id !== id);
-				const approving = orders.find(odr => odr._id === id);
-				approving.status = 'Approved'
+			.then((res) => res.json())
+			.then((data) => {
+				console.log(data);
+				if (data.modifiedCount > 0) {
+					const reamaining = orders.filter((odr) => odr._id !== id);
+					const approving = orders.find((odr) => odr._id === id);
+					approving.status = "Approved";
 
-				const newOrders = [approving, ...reamaining, ];
-				setOrders(newOrders)
-			}
-		})
-
-		
-	}
+					const newOrders = [approving, ...reamaining];
+					setOrders(newOrders);
+				}
+			});
+	};
 
 	useEffect(() => {
-		fetch(`http://localhost:5000/orders?email=${user?.email}`, {
-			headers : {
-				authorization : `Bearer ${localStorage.getItem('genius-token')}`
+		fetch(
+			`https://genius-car-server-rust.vercel.app/orders?email=${user?.email}`,
+			{
+				headers: {
+					authorization: `Bearer ${localStorage.getItem("genius-token")}`,
+				},
 			}
-		})
+		)
 			.then((res) => {
-				if(res.status === 401 || res.status === 403){
-				return logOut()
+				if (res.status === 401 || res.status === 403) {
+					return logOut();
 				}
-			 return	res.json()
+				return res.json();
 			})
 			.then((data) => {
-				console.log('receive',data);
-				setOrders(data)
+				console.log("receive", data);
+				setOrders(data);
 			});
-	}, [user?.email,logOut]);
+	}, [user?.email, logOut]);
 
 	return (
 		<div>
@@ -76,7 +75,6 @@ const Orders = () => {
 
 			<div className="overflow-x-auto w-full">
 				<table className="table w-full">
-					
 					<thead>
 						<tr>
 							<th>Name</th>
@@ -85,19 +83,16 @@ const Orders = () => {
 							<th></th>
 						</tr>
 					</thead>
-					<tbody>						
-
-                        {
-                            orders.map(order => <OrderRow 
-                            key={order._id} 
-                            order={order}
-							handleDelete={handleDelete}
-							handleStatusUpdate={handleStatusUpdate}
-                            ></OrderRow>)
-                        }
-						
+					<tbody>
+						{orders.map((order) => (
+							<OrderRow
+								key={order._id}
+								order={order}
+								handleDelete={handleDelete}
+								handleStatusUpdate={handleStatusUpdate}
+							></OrderRow>
+						))}
 					</tbody>
-					
 				</table>
 			</div>
 		</div>
